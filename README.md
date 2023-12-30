@@ -198,7 +198,7 @@ webpack 5.89.0 compiled successfully in 78 ms
 <script src="dist/main.js"></script>
 ```
 
-#### 3. webpack.config.js
+#### webpack.config.js
 ```bash
 node_modules/.bin/webpack --help
 # --config               Path to the config file
@@ -236,12 +236,8 @@ webpack 5.89.0 compiled successfully in 76 ms
 
 모든 옵션을 웹팩 설정 파일로 옮겼기 때문데 단순히 webpack 명령어만 실행하면 된다. 
 
----
-### 1. 웹팩 : 앤트리와 아웃풋 실습
-```bash 
-# TODO: 웹팩으로 빌드한 자바스크립트를 여기에 로딩하세요
-# branch : 1-webpack/1-entry
-# 1) index.html 을 npm 환경으로 세팅해야 한다. 
-```
+#### 3. 웹팩과 로더
+웹팩은 모든 파일을 모듈로 바라보게 한다. 이는 JS 뿐만 아니라, 스타일시트, 이미지, 폰트까지도 전부 모듈로 인식할 수 있게 하기에 `import`구문을 사용하여 JS 코드 안으로 가져올 수 있게 된다. 이러한 환경을 가능하게 하는 것이 `웹팩의 로더 덕분`이다. 로더는 타입스크립트 같은 다른 언어를 자바스크립트 문법으로 변환해 주거나 이미지를 dataURL 형식의 문자열로 변환한다. 
+
 [목차로 이동하기](#강의내용)
 </details>
