@@ -129,7 +129,7 @@ yarn add package-name --dev
 ```
 
 보통 라이브러리가 정식 릴리즈 되기 전에는 패키지 버전이 수시로 변한다. 이때 주버전이 변할 때 하위 호환성이 지켜지지 않는 경우가 빈번하다. 이러한 경우의 호환성을 위해서 유의적 버전이 활용된다. 
-[목차로 이동하기](#강의내용)
+[목차로 돌아가기](#강의내용)
 </details>
 
 <details>
@@ -270,7 +270,7 @@ module.exports = function myWebpackLoader (content) {
 
 - (1) 실습을 위해 루트경로에 `my-webpack-loader.js` 파일을 생성
 - (2) 그 안에 위와 같이 함수 형태의 기본 로더를 생성
-- (3) webpack.config.js 에 해당 로더를 추가하기, 로더는 module.exports 객체 안에 `module.rules` 안에 동작할 패턴을 `test`프로퍼티에 담고,`use` 프로퍼티를 통해서 실행할 로더 함수를 등록해 준다. 이때 패턴은 정규식으로 표현이 되는데, 여기서 설정한 내용은 `.js` 모든 자바스크립트 파일에 대해서 동작하라는 구분이다. 그러기에 파일이 N개라면, 로더도 N번 동작하는 것이다. 
+- (3) webpack.config.js 에 해당 로더를 추가하기, 로더는 module.exports 객체 안에 `module.rules` 안에 동작할 패턴을 `test`프로퍼티에 담고,`use` 프로퍼티를 통해서 실행할 로더 함수를 등록해 준다. 이때 패턴은 정규식으로 표현이 되는데, 여기서 설정한 내용은 `.js` 모든 자바스크립트 파일에 대해서 동작하라는 구분이다. 그러기에 파일이 N개라면, 로더도 N번 동작하는 것이다. 이때 use의 실행은 배열의 마지막에서 앞으로 실행된다. 
 
 ```javascript
 module.exports = {
@@ -312,5 +312,14 @@ module.exports = function myWebpackLoader (content) {
 var _math_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./math.js */ \"./src/math.js\");\n\n\n\nalert(_math_js__WEBPACK_IMPORTED_MODULE_1__.sum(1,2));\n\ndocument.addEventListener(\"DOMContentLoaded\", () => {\n  new _controllers_MainController_js__WEBPACK_IMPORTED_MODULE_0__[\"default\"]();\n});\n\n\n//# sourceURL=webpack://lecture-frontend-dev-env/./src/app.js?");
 ```
 
-[목차로 이동하기](#강의내용)
+#### 자주 자용하는 로더 : css-loader
+JS파일 외에, 대표적으로 CSS 파일이 존재하는데 로더를 통하면 해당 파일을 import 구분을 통해서 가져올 수 있다. 그런데 브라우저에서 인식하기 위해서는 css가 CSS 트리를 생성할 수 있도록 해야 한다. 그 결과 등장한 것이 styeler 로더이다. 
+
+#### 자주 자용하는 로더 : flie-loader
+이미지 파일도 사용할 수 있다. 이때 파일명은 해쉬값으로 변경되는데, 이는 캐시 갱신을 위해서 처리된 것이라고 판단된다. 
+
+#### 자주 자용하는 로더 : url-loader
+사용하는 이미지가 많다면 다운로드 받는 시간이 비례하게 될 것이다. 이를 위해서 img 태그의 src 속성을 통해서 불러올 수 도 있다. 예를 들어 작은 이미지를 여러 개 사용한다면 Data URI Scheme을 이용하는 방법이다. 아이콘처럼 용량이 작거나 사용 빈도가 높은 이미지는 파일을 그대로 사용하기 보다는 Data URI Scheeme을 적용하기 위해 url-loader를 사용하면 좋겠다
+
+[목차로 돌아가기](#강의내용)
 </details>
