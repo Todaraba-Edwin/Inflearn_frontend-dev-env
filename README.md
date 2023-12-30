@@ -236,8 +236,81 @@ webpack 5.89.0 compiled successfully in 76 ms
 
 모든 옵션을 웹팩 설정 파일로 옮겼기 때문데 단순히 webpack 명령어만 실행하면 된다. 
 
+#### 실습
+```bash
+npm init # npm로 환경설정 후, 웹팩설정파일 생성 
+```
+
+```javascript
+// 모듈생성시, output에서 모듈의 이름을 동적으로 처리할 수 있다. [계산된 프로퍼티]를 활용하여, entry에 정의된 객체로 파일이 묶여지게 된다. 
+
+module.exports = {
+  mode: "development",
+  entry: {
+    main: "./src/app.js",
+  },
+  output: {
+    filename: "[name].js",
+    path: path.resolve("./dist"),
+  },
+}
+```
+
 #### 3. 웹팩과 로더
 웹팩은 모든 파일을 모듈로 바라보게 한다. 이는 JS 뿐만 아니라, 스타일시트, 이미지, 폰트까지도 전부 모듈로 인식할 수 있게 하기에 `import`구문을 사용하여 JS 코드 안으로 가져올 수 있게 된다. 이러한 환경을 가능하게 하는 것이 `웹팩의 로더 덕분`이다. 로더는 타입스크립트 같은 다른 언어를 자바스크립트 문법으로 변환해 주거나 이미지를 dataURL 형식의 문자열로 변환한다. 
+
+로더의 형태는 함수입니다. 
+
+```javascript 
+module.exports = function myWebpackLoader (content) {
+    console.log('myWebpackLoader 동작함');
+    return content
+}
+```
+
+- (1) 실습을 위해 루트경로에 `my-webpack-loader.js` 파일을 생성
+- (2) 그 안에 위와 같이 함수 형태의 기본 로더를 생성
+- (3) webpack.config.js 에 해당 로더를 추가하기, 로더는 module.exports 객체 안에 `module.rules` 안에 동작할 패턴을 `test`프로퍼티에 담고,`use` 프로퍼티를 통해서 실행할 로더 함수를 등록해 준다. 이때 패턴은 정규식으로 표현이 되는데, 여기서 설정한 내용은 `.js` 모든 자바스크립트 파일에 대해서 동작하라는 구분이다. 그러기에 파일이 N개라면, 로더도 N번 동작하는 것이다. 
+
+```javascript
+module.exports = {
+  // ...
+  module : {
+    rules : [
+      {
+        test: /\.js$/, // 로더가 동작하는 패턴
+        use: [
+          path.resolve('./my-webpack-loader.js')
+        ]
+      }
+    ]
+  }
+}
+```
+
+- (4) 이후, ` "build": "./node_modules/.bin/webpack"` 로 등록한 바와 같이 빌드 명령어를 실행하면, 로더가 동작한 것을 터미널에서 확인할 수 있다. 로더의 역할은 아래와 같이 사용할 수 있는데, 한 가지의 사례를 살펴보자. 
+
+```javascript
+// 강의 내용을 보면 math.js 파일을 만들고 간단한 함수를 등록했었다. 
+// math.js
+export function sum(a,b) {
+    return a + b;
+}
+// entry >> app.js
+import * as math from './math.js'
+console.log(math.sum(1,2));
+
+// 이를 로더를 통해서 제어할 수 있는데 다음과 같다. 
+module.exports = function myWebpackLoader (content) {
+    return content.replace('console.log(', 'alert(');
+}
+```
+
+- (5) 빌드 명령어를 선언하고, 브라우저에서 소스코드를 살펴보면와 같이 로더에 의해서 제어된 코드 확인할 수 있다. 
+
+```bash
+var _math_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./math.js */ \"./src/math.js\");\n\n\n\nalert(_math_js__WEBPACK_IMPORTED_MODULE_1__.sum(1,2));\n\ndocument.addEventListener(\"DOMContentLoaded\", () => {\n  new _controllers_MainController_js__WEBPACK_IMPORTED_MODULE_0__[\"default\"]();\n});\n\n\n//# sourceURL=webpack://lecture-frontend-dev-env/./src/app.js?");
+```
 
 [목차로 이동하기](#강의내용)
 </details>
