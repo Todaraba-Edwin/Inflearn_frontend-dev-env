@@ -4,7 +4,11 @@
   "description": "\"프론트엔드 개발 환경의 이해\" 강의 자료입니다.",
   "main": ".eslintrc.js",
   "devDependencies": {
-    "webpack": "^4.41.5",
+    "css-loader": "^6.8.1",
+    "file-loader": "^6.2.0",
+    "style-loader": "^3.3.3",
+    "url-loader": "^4.1.1",
+    "webpack": "5",
     "webpack-cli": "^3.3.10"
   },
   "scripts": {

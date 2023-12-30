@@ -8,5 +8,22 @@ module.exports = {
   output: {
     filename: '[name].js',
     path: path.resolve('./dist'),
+  },
+  module : {
+    rules : [
+      {
+        test: /\.css$/,
+        use: ["style-loader", "css-loader"],
+      },
+      {
+        test: /\.(png|jpg|svg)$/,
+        loader: 'url-loader',
+        options: {
+          publicPath: "./dist",
+          name: "[name].[ext]?[hash]",
+          limit: 10000 // 10kb 미만은 url-loader 이상은 file-loader
+        },
+      }
+    ]
   }
 }
