@@ -1,5 +1,4 @@
 const path = require("path");
-// const MyWebpackPlugin = require('./my-webpack-plugin')
 const webpack = require('webpack')
 const childProcess = require('child_process')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
@@ -46,7 +45,7 @@ module.exports = {
     // new MyWebpackPlugin
     new webpack.BannerPlugin({
       banner: `
-        Build Data: ${new Date().toLocaleDateString()}
+        Build Data: ${new Date().toLocaleString()}
         Commit Version: ${childProcess.execSync('git rev-parse --short HEAD')}
         Author: ${childProcess.execSync('git config user.email')}
       `
@@ -60,11 +59,11 @@ module.exports = {
       template: './src/index.html',
       templateParameters: {
         env: process.env.NODE_ENV === 'development' ? '(개발용)' : ''
-      },
-      minify: process.env.NODE_ENV === 'production' ? {
-        collapseWhitespace: true, // 빈칸을 제거
-        removeComments: true // 주석을 제거 
-      } : false
+      },// EJS 문법으로 html > title 에 기록해두었기에, 각주하면 빌드 터짐... 
+      // minify: process.env.NODE_ENV === 'production' ? {
+      //   collapseWhitespace: true, // 빈칸을 제거
+      //   removeComments: true // 주석을 제거 
+      // } : false
     }),
     new CleanWebpackPlugin(),
     ...(process.env.NODE_ENV === 'production' ? [
