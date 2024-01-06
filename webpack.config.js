@@ -1,5 +1,10 @@
 const path = require("path");
-const MyWebpackPlugin = require('./my-webpack-plugin')
+// const MyWebpackPlugin = require('./my-webpack-plugin')
+const webpack = require('webpack')
+const childProcess = require('child_process')
+const HtmlWebpackPlugin = require('html-webpack-plugin')
+const { CleanWebpackPlugin } = require('clean-webpack-plugin')
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 
 module.exports = {
   mode: "development",
@@ -14,7 +19,11 @@ module.exports = {
     rules: [
       {
         test: /\.css$/,
-        use: ["style-loader", "css-loader"]
+        use: [
+          process.env.NODE_ENV === 'production' ? MiniCssExtractPlugin.loader : 
+          "style-loader", 
+          "css-loader"
+        ]
       },
       {
         test: /\.(png|jpg|svg|gif)$/,
@@ -34,6 +43,36 @@ module.exports = {
    * 4. MiniCssExtractPlugin: 모듈에서 css 파일을 분리하세요.
    */
   plugins : [
-    new MyWebpackPlugin
+    // new MyWebpackPlugin
+    new webpack.BannerPlugin({
+      banner: `
+        Build Data: ${new Date().toLocaleDateString()}
+        Commit Version: ${childProcess.execSync('git rev-parse --short HEAD')}
+        Author: ${childProcess.execSync('git config user.email')}
+      `
+    }),
+    new webpack.DefinePlugin({
+      TWO:'1+1',
+      TWO_String: JSON.stringify('1+1'),
+      'api.domain': JSON.stringify('http://dev.api.domain.com') // 객체로 기록하는 것도 가능하다. 
+    }),
+    new HtmlWebpackPlugin({
+      template: './src/index.html',
+      templateParameters: {
+        env: process.env.NODE_ENV === 'development' ? '(개발용)' : ''
+      },
+      minify: process.env.NODE_ENV === 'production' ? {
+        collapseWhitespace: true, // 빈칸을 제거
+        removeComments: true // 주석을 제거 
+      } : false
+    }),
+    new CleanWebpackPlugin(),
+    ...(process.env.NODE_ENV === 'production' ? [
+      new MiniCssExtractPlugin(
+        {
+          filename: '[name].css'
+        }
+      )
+    ] : [])
   ]
 };

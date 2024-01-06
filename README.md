@@ -130,3 +130,213 @@ class MyWebpackPlugin {
 }
 module.exports = MyWebpackPlugin
 ```
+
+### 자주 사용하는 플러그인 
+1. BannerPlugin
+
+첫번째는 webpack에서 기본적으로 제공하는 BannerPlugin으로, 설정은 `webpack.config.js`에서 webpack 모듈을 불러오고 해당 내용을 플러그인 하위에 new 키워드를 통해 새로운 인스턴스를 생성하면 된다. 이렇게 설정한 후 `build`를 실행하면 빌드된 파일의 상단에 추가한 내용이 들어 있는 것을 확인해 볼 수 있다. 
+
+```javascript 
+// webpack.config.js
+const webpack = require('webpack')
+
+module.exports = {
+  plugins : [
+    new webpack.BannerPlugin({
+      banner: '이것은 배너입니다.'
+    })
+  ]
+};
+
+// ⬇⬇⬇ dist/main.js
+/*! 이것은 배너입니다. */
+/*
+ * ATTENTION: The "eval" devtool has been used (maybe by default in mode: "development").
+ * This devtool is neither made for production nor for readable output files.
+ * It uses "eval()" calls to create a separate source file in the browser devtools.
+ * If you are trying to read the output file, select a different devtool (https://webpack.js.org/configuration/devtool/)
+ * or disable the default devtool with "devtool: false".
+ * If you are looking for production-ready output files, see mode: "production" (https://webpack.js.org/configuration/mode/).
+ */
+```
+
+이를 통해서 빌드한 날짜, 또는 커밋 버전을 명시하곤 하는데, git이 설치되어 있다면, 다음과 같은 명령어로 해당 버전의 id를 찾아낼 수 있다. 
+
+```bash
+ git rev-parse --short HEAD # ex) 27b1db6
+```
+
+그렇다면 플러그인을 통해서 위의 명령어를 실행시켜고, 해당 결과를 main.js에 추가해보자. 
+
+```javascript 
+const childProcess = require('child_process') // Node에서 제공하는 터미널 실행명령을 담은 모듈을 호출
+
+module.exports = {
+   plugins : [
+    new webpack.BannerPlugin({
+      banner: `
+        Build Data: ${new Date().toLocaleDateString()}
+        Commit Version: ${childProcess.execSync('git rev-parse --short HEAD')}
+        Author: ${childProcess.execSync('git config user.email')}
+      `
+    })
+  ]
+};
+
+/*
+  빌드시간, 커밋버전, 작성자등의 정보를 빌드파일에 담을 수 있다. 
+*/ 
+```
+
+2. DefinePlugin
+
+보통의 개발은 `운영환경`과 `개발환경`으로 각각 개발이 진행된다. 이렇게 될 때 환경에 따라 API 서버 주소가 다를 것이다. 이러한 환경 의존적인 정보를 소스가 아닌 곳에서 관리하는 것이 좋다. 배포할 때마타 코드를 수정하는 것은 곤란하기 때문이다. 이러한 기능을 웹팩은 DefinePlugin에서 제공한다. 
+
+사용에 있어서 그 용도는 env와 유사하다. DefinePlugin과 .env 파일 모두 환경 변수를 다루는 도구로 사용되기 때문이다. 그러나 사용목적과 상황에 따라 다르게 적용될 수 있음을 기억해야 한다. 
+
+    .env
+    보통 환경에 따라 변경되는 설정 값들을 저장하는데 사용된다. React앱에서는 `REACT_APP`으로 시작하는 변수들이 선언된다. 
+
+    DefinePlugin
+    웹팩의 플러그인으로, 빌드 시에 코드 내에서 정적인 값들을 대체하는 데 사용된다. 예를 들어 개발과 프로덕션 환경에서의 로깅 수준을 다르게 하고자 할 때 사용된다. 
+
+  ```javascript
+    plugins: [
+    new webpack.DefinePlugin({
+      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
+      LOGGING_LEVEL: process.env.NODE_ENV === 'production' ? '"info"' : '"debug"',
+    }),
+    ],
+  ```
+
+  이러한 로깅설정을 통해서 개발 환경시에 더 많은 로그를 확인할 수 있으며, 프로덕션 환경에서는 불필요한 디버스 정보가 제거되어 가볍게 배포되도록 설정할 수 있다.
+
+3. HtmlWebpackPlugin
+서드파티 플러그인이기에 설치가 필요하다. 해당 기능은 아래의 예제를 보면 간단하다. 
+
+```bash
+yarn add html-webpack-plugin -D
+```
+
+```html
+  <head>
+    <script defer src="main.js"></script>
+  </head>
+```
+
+이전까지는 웹팩으로 생성한 아웃풋을 수기로 기록했어야 했다. HtmlWebpackPlugin는 빌드시에 해당 코드를 포함한 html 파일이 아웃풋에 만들어지도록 설정하는 플러그인이다. 
+
+```javascript 
+const HtmlWebpackPlugin = require('html-webpack-plugin')
+  plugins: [
+    new HtmlWebpackPlugin({
+    template: './src/index.html'
+  })
+  ],
+```
+
+응용으로는 EJS 문법을 활용하는 사례이다. `html-head-title`에 동적으로 문구를 생성하는 사례이다. 
+
+```html
+<head>
+    <title>검색, <%= env %></title>
+  </head>
+```
+
+```javascript
+  plugins: [
+    new HtmlWebpackPlugin({
+    template: './src/index.html',
+     templateParameters: {
+        env: process.env.NODE_ENV === 'development' ? '(개발용)' : ''
+      }
+  })
+  ],
+```
+```bash
+NODE_ENV=development yarn build
+```
+
+이와 같이 실행하면, 아래와 같이 웹팩 플러그인에 따라서, dist 폴더에 해당 빌드 환경의 정보가 포함되는 것을 확인할 수 있다. 
+
+```html
+ <head>
+    <title>검색, (개발용)</title>
+    <script defer src="main.js"></script>
+  </head>
+```
+
+뿐만 아니라 해당 플러그인은 개발환경(dev)과 다른 운영환경(prod)을 위해 파일을 압축하고 불필요한 주석을 제거하는 기능도 제공한다. 
+
+```javascript 
+plugins : [
+    new HtmlWebpackPlugin({
+      template: './src/index.html',
+      templateParameters: {
+        env: process.env.NODE_ENV === 'development' ? '(개발용)' : ''
+      },
+      // minify: {
+      //   collapseWhitespace: true, // 빈칸을 제거
+      //   removeComments: true // 주석을 제거 
+      // }
+      // 일반적으로 운영설정 시에 주석을 제거하고, 개발환경에서는 빈칸을 남겨놓는 용도로 많이 활용된다. 
+       minify: process.env.NODE_ENV === 'production' ? {
+        collapseWhitespace: true, // 빈칸을 제거
+        removeComments: true // 주석을 제거 
+      } : false
+    })
+  ]
+```
+
+4. CleanWebpackPlugin
+해당 플러그인도 서드파티 플러그인이기에 설치를 해야 한다. 빌드 결과물은 아웃풋 경로에 모이는데 과거 파일이 남아 있을 수 있기에, 빌드시 기존의 dist 파일의 내용을 제거해주는 플러그인이다. 
+
+```bash
+yarn add clean-webpack-plugin -D
+```
+```javascript 
+const { CleanWebpackPlugin } = require('clean-webpack-plugin')
+
+plugins: [
+    new CleanWebpackPlugin()
+  ],
+```
+
+해당 플러그인은 default 로 선언되어 있지 않기에, {중괄호}를 통해서 모듈을 가져와야 하며, 해당 인스턴스느 함수이기에, 즉시실행을 시켜준다. 그려면 dist 폴더의 덮어씌어지지 않는 파일들이 제거되는 것을 확인 할 수 있다. 
+
+5. MiniCssExtractPlugin
+스타일시트가 많아지면, 번들링하는 것이 부담이 될 수 있다. 번들 결과에서 스타일시트만 뽑아서 별도의 css 파일로 만들어 역할에 따라 파일을 분리하는 것이 유리하다. 브라우져에서 큰 파일 하나를 내려받는 것보다 여러 개의 작은 파일을 동시에 다운로드 하는 것이 빠르기 때문이다. 이 역시도 개발환경에서는 상관없지만, 운영환경에서는 분리하는 방향이 효율적일 것이다. 
+
+```bash
+yarn add mini-css-extract-plugin -D
+```
+
+```javascript 
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+module.exports = {
+  module: {
+    rules: [
+      {
+        test: /\.css$/,
+        use: [
+          process.env.NODE_ENV === 'production' ? MiniCssExtractPlugin.loader : 
+          "style-loader", 
+          "css-loader"
+        ]
+      },
+    ]
+  },
+  plugins : [
+    // production 운영환경에서만 동작하도록 인스턴스를 제어할 수 있다. 
+    ...(process.env.NODE_ENV === 'production' ? [
+      new MiniCssExtractPlugin(
+        {
+          filename: '[name].css'
+        }
+      )
+    ] : [])
+  ]
+}
+```
+
+이와 같이 플러그인을 설정한 다음에는, 이전의 플러그인과 다르게 로더를 설정해줘야 한다. 이를 통해서 운영환경에서 해당 과정이 동작하도록 하여, 번들링을 분활하고 보다 개선된 환경을 사용자에게 제공할 수 있게 된 것이다. 해당 결과는 main.js 하나 main.css 하나가 분리되어 dist 폴더에 생성되는 것을 확인할 수 있다. 
